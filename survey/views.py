@@ -1,7 +1,10 @@
+import json
+
 from django.http import JsonResponse
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
-from survey.models import Question, Answer
+
+from survey.models import Answer, LikeDislike, Question
 
 
 class QuestionListView(ListView):
@@ -37,10 +40,22 @@ def answer_question(request):
     return JsonResponse({'ok': True})
 
 def like_dislike_question(request):
-    question_pk = request.POST.get('question_pk')
-    if not request.POST.get('question_pk'):
+    body = json.loads(request.body)
+
+    question_pk = body.get('question_pk')
+    action = body.get('action')
+
+    if not question_pk or not action:
         return JsonResponse({'ok': False})
-    question = Question.objects.filter(pk=question_pk)[0]
-    # TODO: Dar Like
+
+    like_dislike = LikeDislike.objects.get_or_create(
+        question_id=question_pk, author_id=request.user.id)[0]
+
+    if action == 'like':
+        like_dislike.value = 1 if like_dislike.value != 1 else 0
+    elif action == 'dislike':
+        like_dislike.value = -1 if like_dislike.value != -1 else 0
+
+    like_dislike.save()
     return JsonResponse({'ok': True})
 

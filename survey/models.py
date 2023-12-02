@@ -11,8 +11,14 @@ class Question(models.Model):
                                on_delete=models.CASCADE)
     title = models.CharField('Título', max_length=200)
     description = models.TextField('Descripción')
-    likes = models.IntegerField('Likes', default=0)
-    dislikes = models.IntegerField('Dislikes', default=0)
+
+    @property
+    def likes(self):
+        return self.likes_dislikes.filter(value=1).count()
+
+    @property
+    def dislikes(self):
+        return self.likes_dislikes.filter(value=-1).count()
 
     @property
     def ranking(self):
@@ -35,3 +41,15 @@ class Answer(models.Model):
     author = models.ForeignKey(get_user_model(), related_name="answers", verbose_name='Autor', on_delete=models.CASCADE)
     value = models.PositiveIntegerField("Respuesta", default=0)
     comment = models.TextField("Comentario", default="", blank=True)
+
+
+class LikeDislike(models.Model):
+    LIKE_VALUES = ((1, 'Like'), (0, 'Neutral'), (-1, 'Dislike'),)
+
+    question = models.ForeignKey(
+        Question, related_name="likes_dislikes", verbose_name='Pregunta', on_delete=models.CASCADE
+    )
+    author = models.ForeignKey(
+        get_user_model(), related_name="likes_dislikes", verbose_name='Autor', on_delete=models.CASCADE
+    )
+    value = models.IntegerField("Valor", choices=LIKE_VALUES, default=0)

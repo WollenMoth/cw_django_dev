@@ -52,8 +52,26 @@
 
 {% block js %}
     <script>
-
-
+        document.querySelectorAll('.like').forEach(function(button) {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+    
+                const questionPk = this.dataset.question;
+                const value = this.dataset.value;
+    
+                fetch('question/like', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        question_pk: questionPk,
+                        action: value
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+            });
+        });
     </script>
 
 {% endblock %}
