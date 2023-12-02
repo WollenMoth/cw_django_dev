@@ -43,9 +43,10 @@ def like_dislike_question(request):
     body = json.loads(request.body)
 
     question_pk = body.get('question_pk')
+    author_id = request.user.id
     action = body.get('action')
 
-    if not question_pk or not action:
+    if not question_pk or not author_id or not action:
         return JsonResponse({'ok': False})
 
     like_dislike = LikeDislike.objects.get_or_create(
