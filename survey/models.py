@@ -1,5 +1,7 @@
-from django.db import models
+from datetime import date
+
 from django.contrib.auth import get_user_model
+from django.db import models
 from django.urls import reverse
 
 
@@ -9,8 +11,13 @@ class Question(models.Model):
                                on_delete=models.CASCADE)
     title = models.CharField('Título', max_length=200)
     description = models.TextField('Descripción')
-    # TODO: Quisieramos tener un ranking de la pregunta, con likes y dislikes dados por los usuarios.
+    likes = models.IntegerField('Likes', default=0)
+    dislikes = models.IntegerField('Dislikes', default=0)
 
+    @property
+    def ranking(self):
+        bonus = 10 if self.created == date.today() else 0
+        return self.answers.count() * 10 + self.likes * 5 - self.dislikes * 3 + bonus
 
     def get_absolute_url(self):
         return reverse('survey:question-edit', args=[self.pk])
