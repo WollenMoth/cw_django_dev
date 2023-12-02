@@ -25,6 +25,12 @@ class Question(models.Model):
         bonus = 10 if self.created == date.today() else 0
         return self.answers.count() * 10 + self.likes * 5 - self.dislikes * 3 + bonus
 
+    def user_likes(self, user):
+        return self.likes_dislikes.filter(author=user, value=1).exists()
+
+    def user_dislikes(self, user):
+        return self.likes_dislikes.filter(author=user, value=-1).exists()
+
     def get_absolute_url(self):
         return reverse('survey:question-edit', args=[self.pk])
 
