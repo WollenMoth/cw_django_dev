@@ -9,6 +9,7 @@ from survey.models import Answer, LikeDislike, Question
 
 class QuestionListView(ListView):
     model = Question
+    ordering = ['-ranking']
 
 
 class QuestionCreateView(CreateView):

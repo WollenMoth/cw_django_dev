@@ -5,6 +5,30 @@ from django.db import models
 from django.urls import reverse
 
 
+class QuestionManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().annotate(
+            likes=models.Count(
+                'likes_dislikes', filter=models.Q(likes_dislikes__value=1)),
+            dislikes=models.Count(
+                'likes_dislikes', filter=models.Q(likes_dislikes__value=-1)),
+            ranking=models.Count('answers') * 10 +
+            models.Sum(
+                models.Case(
+                    models.When(likes_dislikes__value=1, then=5),
+                    models.When(likes_dislikes__value=-1, then=-3),
+                    default=0,
+                    output_field=models.IntegerField(),
+                )
+            ) +
+            models.Case(
+                models.When(created=date.today(), then=10),
+                default=0,
+                output_field=models.IntegerField(),
+            )
+        )
+
+
 class Question(models.Model):
     created = models.DateField('Creada', auto_now_add=True)
     author = models.ForeignKey(get_user_model(), related_name="questions", verbose_name='Pregunta',
@@ -12,18 +36,7 @@ class Question(models.Model):
     title = models.CharField('Título', max_length=200)
     description = models.TextField('Descripción')
 
-    @property
-    def likes(self):
-        return self.likes_dislikes.filter(value=1).count()
-
-    @property
-    def dislikes(self):
-        return self.likes_dislikes.filter(value=-1).count()
-
-    @property
-    def ranking(self):
-        bonus = 10 if self.created == date.today() else 0
-        return self.answers.count() * 10 + self.likes * 5 - self.dislikes * 3 + bonus
+    objects = QuestionManager()
 
     def user_likes(self, user):
         return self.likes_dislikes.filter(author=user, value=1).exists()
