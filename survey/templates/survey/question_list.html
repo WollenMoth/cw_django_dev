@@ -20,7 +20,7 @@
                         <u class="fw-lighter mb-1">Respuesta</u>
                         <div>
                             {% for val in '12345' %}
-                                <a class="mx-1 answer {% if question.user_value|slugify == val %}fas{% else %}fal{% endif %} fa-star text-decoration-none"
+                                <a class="mx-1 answer {% if question|user_value:user|slugify == val %}fas{% else %}fal{% endif %} fa-star text-decoration-none"
                                    data-question="{{ question.pk }}"
                                    data-value="{{ val }}" href="#"></a>
                             {% endfor %}

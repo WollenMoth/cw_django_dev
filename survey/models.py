@@ -44,6 +44,9 @@ class Question(models.Model):
     def user_dislikes(self, user):
         return self.likes_dislikes.filter(author=user, value=-1).exists()
 
+    def user_value(self, user):
+        return self.answers.filter(author=user).values_list('value', flat=True).first()
+
     def get_absolute_url(self):
         return reverse('survey:question-edit', args=[self.pk])
 
