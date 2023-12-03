@@ -87,7 +87,7 @@
                 event.preventDefault();
 
                 const question_pk = this.dataset.question;
-                const value = button.classList.contains('fas') ? 0 : this.dataset.value;
+                const value = button.classList.contains('fas') ? 0 : Number(this.dataset.value);
     
                 fetch('{% url "survey:question-answer" %}', {
                     method: 'POST',
