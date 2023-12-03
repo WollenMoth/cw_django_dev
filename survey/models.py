@@ -7,25 +7,21 @@ from django.urls import reverse
 
 class QuestionManager(models.Manager):
     def get_queryset(self):
+        likes = models.Count(
+            'likes_dislikes', filter=models.Q(likes_dislikes__value=1), distinct=True)
+        dislikes = models.Count(
+            'likes_dislikes', filter=models.Q(likes_dislikes__value=-1), distinct=True)
+        answers = models.Count(
+            'answers', filter=models.Q(answers__value__gt=0), distinct=True)
+        bonus = models.Case(
+            models.When(created=date.today(), then=10),
+            default=0,
+            output_field=models.IntegerField())
+
         return super().get_queryset().annotate(
-            likes=models.Count(
-                'likes_dislikes', filter=models.Q(likes_dislikes__value=1)),
-            dislikes=models.Count(
-                'likes_dislikes', filter=models.Q(likes_dislikes__value=-1)),
-            ranking=models.Count('answers') * 10 +
-            models.Sum(
-                models.Case(
-                    models.When(likes_dislikes__value=1, then=5),
-                    models.When(likes_dislikes__value=-1, then=-3),
-                    default=0,
-                    output_field=models.IntegerField(),
-                )
-            ) +
-            models.Case(
-                models.When(created=date.today(), then=10),
-                default=0,
-                output_field=models.IntegerField(),
-            )
+            likes=likes,
+            dislikes=dislikes,
+            ranking=answers * 10 + likes * 5 - dislikes * 3 + bonus,
         )
 
 
