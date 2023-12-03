@@ -67,21 +67,15 @@ def like_dislike_question(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'User must be authenticated.'}, status=401)
 
-    action = body.get('action')
+    value = body.get('value')
 
-    if not action:
-        return JsonResponse({'error': 'action is required.'}, status=400)
+    if value is None:
+        return JsonResponse({'error': 'value is required.'}, status=400)
 
-    like_dislike = LikeDislike.objects.get_or_create(
-        question_id=question_pk, author_id=request.user.id)[0]
+    if value not in [-1, 0, 1]:
+        return JsonResponse({'error': 'Invalid value.'}, status=400)
 
-    if action == 'like':
-        like_dislike.value = 1 if like_dislike.value != 1 else 0
-    elif action == 'dislike':
-        like_dislike.value = -1 if like_dislike.value != -1 else 0
-    else:
-        return JsonResponse({'error': 'Invalid action.'}, status=400)
-
-    like_dislike.save()
+    LikeDislike.objects.update_or_create(
+        question_id=question_pk, author_id=request.user.id, defaults={'value': value})
     return JsonResponse({'ok': True})
 
