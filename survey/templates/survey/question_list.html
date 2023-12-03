@@ -81,6 +81,33 @@
                 })
             });
         });
+
+        document.querySelectorAll('.answer').forEach(function(button) {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+
+                const question_pk = this.dataset.question;
+                const value = button.classList.contains('fas') ? 0 : this.dataset.value;
+    
+                fetch('{% url "survey:question-answer" %}', {
+                    method: 'POST',
+                    body: JSON.stringify({ question_pk, value }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(res => {
+                    if (res.status == 400)
+                        return alert('Petición inválida');
+                    if (res.status == 401) {
+                        alert('Inicie sesión para poder evaluar una respuesta');
+                        return window.location.href = '{% url "login" %}';
+                    }
+                    window.location.reload();
+                })
+            });
+        });
     </script>
 
 {% endblock %}

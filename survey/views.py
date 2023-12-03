@@ -30,14 +30,30 @@ class QuestionUpdateView(UpdateView):
 
 
 def answer_question(request):
-    question_pk = request.POST.get('question_pk')
-    print(request.POST)
-    if not request.POST.get('question_pk'):
-        return JsonResponse({'ok': False})
-    question = Question.objects.filter(pk=question_pk)[0]
-    answer = Answer.objects.get(question=question, author=request.user)
-    answer.value = request.POST.get('value')
-    answer.save()
+    body = json.loads(request.body)
+
+    question_pk = body.get('question_pk')
+
+    if not question_pk:
+        return JsonResponse({'error': 'question_pk is required.'}, status=400)
+
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'User must be authenticated.'}, status=401)
+
+    value = body.get('value')
+
+    if value is None:
+        print('value is required.')
+        return JsonResponse({'error': 'value is required.'}, status=400)
+
+    if value not in range(6):
+        print('value must be between 0 and 5.')
+        return JsonResponse({'error': 'value must be between 0 and 5.'}, status=400)
+
+    Answer.objects.update_or_create(
+        question_id=question_pk, author_id=request.user.id,
+        defaults={'value': value})
+
     return JsonResponse({'ok': True})
 
 def like_dislike_question(request):
