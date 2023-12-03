@@ -8,3 +8,9 @@ services:
       - .:/app
     ports:
       - "8000:8000"
+  test:
+    build: .
+    command: ptw
+    tty: true
+    volumes:
+      - .:/app
